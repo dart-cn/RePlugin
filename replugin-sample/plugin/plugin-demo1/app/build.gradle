@@ -30,7 +30,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionName "1.0"
-        versionCode 100
+        versionCode 103
     }
 
     buildTypes {
@@ -52,8 +52,8 @@ android {
 
 // 这个plugin需要放在android配置之后，因为需要读取android中的配置项
 apply plugin: 'replugin-plugin-gradle'
-
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile "com.qihoo360.replugin:replugin-plugin-lib:${rootProject.ext.repluginLibVersion}"
+    //compile "com.qihoo360.replugin:replugin-plugin-lib:${rootProject.ext.repluginLibVersion}" // 版本号统一后在使用这个
+    compile 'com.qihoo360.replugin:replugin-plugin-lib:2.1.0'
+    provided files('libs/fragment.jar')//这个jar就是从Support-fragment中提取出来的并非特制包目的是为了骗过编译期
 }

@@ -38,6 +38,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile "com.qihoo360.replugin:replugin-host-lib:${rootProject.ext.repluginLibVersion}"
+    // compile "com.qihoo360.replugin:replugin-host-lib:${rootProject.ext.repluginLibVersion}" // 版本号统一后在使用这个
     compile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
+    compile 'com.qihoo360.replugin:replugin-host-lib:2.1.1'//合并后需要修改此处版本号
 }
