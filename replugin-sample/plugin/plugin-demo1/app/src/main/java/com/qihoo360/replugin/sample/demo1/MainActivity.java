@@ -34,6 +34,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.qihoo360.replugin.Plugin;
+import com.qihoo360.replugin.RePlugin;
 import com.qihoo360.replugin.sample.demo1.activity.single_instance.TIActivity1;
 import com.qihoo360.replugin.sample.demo1.activity.single_top.SingleTopActivity1;
 import com.qihoo360.replugin.sample.demo1.activity.task_affinity.TAActivity1;
@@ -125,7 +126,7 @@ public class MainActivity extends Activity {
         mItems.add(new TestItem("Activity: DataBinding (to Demo2)", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Plugin.startActivity(v.getContext(), new Intent(), "demo2", "com.qihoo360.replugin.sample.demo2.databinding.DataBindingActivity");
+                RePlugin.startActivity(v.getContext(), new Intent(), "demo2", "com.qihoo360.replugin.sample.demo2.databinding.DataBindingActivity");
             }
         }));
         mItems.add(new TestItem("Activity: startForResult (to Demo2)", new View.OnClickListener() {

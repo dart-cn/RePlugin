@@ -17,7 +17,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.repluginGradleVersion = '2.1.1'
+    ext.repluginGradleVersion = '2.1.2'
     repositories {
         mavenLocal()
         jcenter()

@@ -90,7 +90,7 @@ public class PluginDexClassLoader extends DexClassLoader {
 
         // 若插件里没有此类，则会从宿主ClassLoader中找，找到了则直接返回
         // 注意：需要读取isUseHostClassIfNotFound开关。默认为关闭的。可参见该开关的说明
-        if (RePlugin.getConfig().isUseHostClassIfNotFound()) {
+        if (RePlugin.getConfig().isUseHostClassIfNotFound() || className.startsWith("com.qihoo360.replugin")) {
             try {
                 pc = (Class<?>) sLoadClassMethod.invoke(mHostClassLoader, className, resolve);
                 if (pc != null) {

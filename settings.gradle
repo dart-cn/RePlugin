@@ -14,7 +14,7 @@
  * the License.
  */
 
-include ':replugin-host-gradle', ':corelib', ':stubforplugin'
+include ':replugin-host-gradle', ':corelib', ':stubforplugin', ':libjava'
 project(':replugin-host-gradle').projectDir = new File('replugin-host-gradle')
 include ':HostLib'
 project(':HostLib').projectDir = new File('replugin-host-library/replugin-host-lib')

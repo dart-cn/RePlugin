@@ -51,7 +51,7 @@ public class SampleApplication extends RePluginApplication {
         RePluginConfig c = new RePluginConfig();
 
         // 允许“插件使用宿主类”。默认为“关闭”
-        c.setUseHostClassIfNotFound(true);
+        c.setUseHostClassIfNotFound(false);
 
         // FIXME RePlugin默认会对安装的外置插件进行签名校验，这里先关掉，避免调试时出现签名错误
         c.setVerifySign(!BuildConfig.DEBUG);
