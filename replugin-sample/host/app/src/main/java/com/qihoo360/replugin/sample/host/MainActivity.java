@@ -20,16 +20,19 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.qihoo360.replugin.RePlugin;
+import com.qihoo360.replugin.model.PluginInfo;
 
 /**
  * @author RePlugin Team
  */
 public class MainActivity extends Activity {
-
+    private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +40,22 @@ public class MainActivity extends Activity {
         findViewById(R.id.btn_start_demo1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RePlugin.startActivity(MainActivity.this, RePlugin.createIntent("demo1", "com.qihoo360.replugin.sample.demo1.MainActivity"));
+                PluginInfo demo1 = RePlugin.getPluginInfo("demo1");
+                if (demo1 != null) {
+                    RePlugin.startActivity(MainActivity.this, RePlugin.createIntent("demo1", "com.qihoo360.replugin.sample.demo1.MainActivity"));
+                    return ;
+                }
+
+                // 加载 SDCard 上的插件，加载成功启动 插件中的 Activity
+                PluginInfo info = RePlugin.install(Environment.getExternalStorageDirectory() + "/demo3.apk");
+                Log.e(TAG, "onClick: load plugin" );
+                if (info != null) {
+                    String pluginName = info.getName();
+                    RePlugin.startActivity(MainActivity.this, RePlugin.createIntent(pluginName, "com.qihoo360.replugin.sample.demo1.MainActivity"));
+                } else {
+                    Toast.makeText(MainActivity.this, "插件加载失败了！", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 

@@ -33,7 +33,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.qihoo360.replugin.RePlugin;
+import com.qihoo360.replugin.Plugin;
 import com.qihoo360.replugin.sample.demo1.activity.single_instance.TIActivity1;
 import com.qihoo360.replugin.sample.demo1.activity.single_top.SingleTopActivity1;
 import com.qihoo360.replugin.sample.demo1.activity.task_affinity.TAActivity1;
@@ -125,7 +125,7 @@ public class MainActivity extends Activity {
         mItems.add(new TestItem("Activity: DataBinding (to Demo2)", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RePlugin.startActivity(v.getContext(), new Intent(), "demo2", "com.qihoo360.replugin.sample.demo2.databinding.DataBindingActivity");
+                Plugin.startActivity(v.getContext(), new Intent(), "demo2", "com.qihoo360.replugin.sample.demo2.databinding.DataBindingActivity");
             }
         }));
         mItems.add(new TestItem("Activity: startForResult (to Demo2)", new View.OnClickListener() {
@@ -153,7 +153,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent("com.qihoo360.replugin.sample.demo2.action.theme_fullscreen_2");
-                RePlugin.startActivity(v.getContext(), intent, "demo2", null);
+                Plugin.startActivity(v.getContext(), intent, "demo2", null);
             }
         }));
 
@@ -205,7 +205,7 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 // 这是RePlugin的推荐玩法：反射调用Demo2，这样"天然的"做好了"版本控制"
                 // 避免出现我们当年2013年的各种问题
-                ClassLoader cl = RePlugin.fetchClassLoader("demo2");
+                ClassLoader cl = Plugin.fetchClassLoader("demo2");
                 if (cl == null) {
                     Toast.makeText(v.getContext(), "Not install Demo2", Toast.LENGTH_SHORT).show();
                     return;
@@ -225,7 +225,7 @@ public class MainActivity extends Activity {
         mItems.add(new TestItem("Binder: Fast-Fetch (to Demo2)", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                IBinder b = RePlugin.fetchBinder("demo2", "demo2test");
+                IBinder b = Plugin.fetchBinder("demo2", "demo2test");
                 if (b == null) {
                     return;
                 }

@@ -17,12 +17,16 @@
 package com.qihoo360.replugin.model;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
-import com.qihoo360.replugin.Plugin;
-import com.qihoo360.replugin.RePluginEnv;
 import com.qihoo360.replugin.helper.JSONHelper;
 import com.qihoo360.replugin.helper.LogDebug;
 
@@ -30,6 +34,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.Comparator;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.qihoo360.replugin.helper.LogDebug.LOG;
+import static com.qihoo360.replugin.helper.LogDebug.PLUGIN_TAG;
+
 
 /**
  * 用来描述插件的描述信息。以Json来封装
@@ -81,57 +93,30 @@ public class PluginInfo implements Parcelable, Cloneable {
      */
     public static final int FRAMEWORK_VERSION_UNKNOWN = 0;
 
-    /**
-     * 插件存放目录
-     */
-    private static final String LOCAL_PLUGIN_SUB_DIR = "plugins_v3";
-
-    /**
-     * 插件ODEX存放目录
-     */
-    private static final String LOCAL_PLUGIN_ODEX_SUB_DIR = "plugins_v3_odex";
-
-    /**
-     * 插件Native（SO库）存放目录
-     * Added by Jiongxuan Zhang
-     */
-    private static final String LOCAL_PLUGIN_DATA_LIB_DIR = "plugins_v3_libs";
-
-    /**
-     * "纯APK"插件存放目录
-     * Added by Jiongxuan Zhang
-     */
-    private static final String LOCAL_PLUGIN_APK_SUB_DIR = "p_a";
-
-    /**
-     * "纯APK"中释放Odex的目录
-     * Added by Jiongxuan Zhang
-     */
-    private static final String LOCAL_PLUGIN_APK_ODEX_SUB_DIR = "p_od";
-
-    /**
-     * 纯"APK"插件的Native（SO库）存放目录
-     * Added by Jiongxuan Zhang
-     */
-    private static final String LOCAL_PLUGIN_APK_LIB_DIR = "p_n";
-
     private JSONObject mJson;
 
     // 若插件需要更新，则会有此值
     private PluginInfo mPendingUpdate;
     private boolean mIsThisPendingUpdateInfo;
 
-    private PluginInfo(JSONObject jo) {
-        mJson = jo;
+    // 若插件需要卸载，则会有此值
+    private PluginInfo mPendingDelete;
 
-        // 缓存“待更新”的插件信息
-        JSONObject ujo = jo.optJSONObject("upinfo");
-        if (ujo != null) {
-            mPendingUpdate = new PluginInfo(ujo);
-        }
+    private PluginInfo(JSONObject jo) {
+        initPluginInfo(jo);
+    }
+
+    private PluginInfo(String name, int low, int high, int ver) {
+        mJson = new JSONObject();
+        JSONHelper.putNoThrows(mJson, "name", name);
+        JSONHelper.putNoThrows(mJson, "low", low);
+        JSONHelper.putNoThrows(mJson, "high", high);
+        JSONHelper.putNoThrows(mJson, "ver", ver);
     }
 
     private PluginInfo(String pkgName, String alias, int low, int high, int version, String path, int type) {
+        // 如Low、High不正确，则给个默认值（等于应用的“最小支持协议版本”）
+
         mJson = new JSONObject();
         JSONHelper.putNoThrows(mJson, "pkgname", pkgName);
         JSONHelper.putNoThrows(mJson, "ali", alias);
@@ -155,6 +140,25 @@ public class PluginInfo implements Parcelable, Cloneable {
         if (pi.mPendingUpdate != null) {
             this.mPendingUpdate = new PluginInfo(pi.mPendingUpdate);
         }
+        if (pi.mPendingDelete != null) {
+            this.mPendingDelete = new PluginInfo(pi.mPendingDelete);
+        }
+    }
+
+    private void initPluginInfo(JSONObject jo) {
+        mJson = jo;
+
+        // 缓存“待更新”的插件信息
+        JSONObject ujo = jo.optJSONObject("upinfo");
+        if (ujo != null) {
+            mPendingUpdate = new PluginInfo(ujo);
+        }
+
+        // 缓存“待卸载”的插件信息
+        JSONObject djo = jo.optJSONObject("delinfo");
+        if (djo != null) {
+            mPendingDelete = new PluginInfo(djo);
+        }
     }
 
     // 通过别名和包名来最终确认插件名
@@ -167,6 +171,72 @@ public class PluginInfo implements Parcelable, Cloneable {
             return pkgName;
         }
         return "";
+    }
+
+    /**
+     * 通过插件APK的MetaData来初始化PluginInfo <p>
+     * 注意：框架内部接口，外界请不要直接使用
+     */
+    public static PluginInfo parseFromPackageInfo(PackageInfo pi, String path) {
+        ApplicationInfo ai = pi.applicationInfo;
+        if (ai == null) {
+            // 几乎不可能，但为保险起见，返回Null
+            return null;
+        }
+
+        String pn = pi.packageName;
+        String alias = null;
+        int low = 0;
+        int high = 0;
+        int ver = 0;
+
+        Bundle metaData = ai.metaData;
+
+        // 优先读取MetaData中的内容（如有），并覆盖上面的默认值
+        if (metaData != null) {
+            // 获取插件别名（如有），如无则将"包名"当做插件名
+            alias = metaData.getString("com.qihoo360.plugin.name");
+
+            // 获取最低/最高协议版本（默认为应用的最小支持版本，以保证一定能在宿主中运行）
+            low = metaData.getInt("com.qihoo360.plugin.version.low");
+            high = metaData.getInt("com.qihoo360.plugin.version.high");
+
+            // 获取插件的版本号。优先从metaData中读取，如无则使用插件的VersionCode
+            ver = metaData.getInt("com.qihoo360.plugin.version.ver");
+        }
+
+        // 针对有问题的字段做除错处理
+
+
+        PluginInfo pli = new PluginInfo(pn, alias, low, high, ver, path, PluginInfo.TYPE_NOT_INSTALL);
+
+        // 获取插件的框架版本号
+        pli.setFrameworkVersionByMeta(metaData);
+
+        return pli;
+    }
+
+    /**
+     * （框架内部接口）通过传入的JSON的字符串来创建PluginInfo对象 <p>
+     * 注意：框架内部接口，外界请不要直接使用
+     */
+    public static PluginInfo parseFromJsonText(String joText) {
+        JSONObject jo;
+        try {
+            jo = new JSONObject(joText);
+        } catch (JSONException e) {
+            if (LOG) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        // 三个字段是必备的，其余均可
+        if (jo.has("pkgname") && jo.has("type") && jo.has("ver")) {
+            return new PluginInfo(jo);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -209,27 +279,20 @@ public class PluginInfo implements Parcelable, Cloneable {
      * 设置最新的插件，目前所在的位置 <p>
      * 注意：若为“纯APK”方案所用，则修改后需调用PluginInfoList.save来保存，否则会无效
      */
-    private void setPath(String path) {
+    public void setPath(String path) {
         JSONHelper.putNoThrows(mJson, "path", path);
     }
 
+
+
     /**
-     * 插件是否被使用过？只要释放过Dex的都认为是true
+     * 设置插件是否被使用过 <p>
+     * 注意：若为“纯APK”方案所用，则修改后需调用PluginInfoList.save来保存，否则会无效
      *
-     * @return 插件是否使用过？
+     * @param used 插件是否被使用过
      */
-    public boolean isUsed() {
-        // 注意：该方法不单纯获取JSON中的值，而是根据插件类型（p-n、纯APK）、所处环境（新插件、当前插件）而定
-        if (isPnPlugin()) {
-            // 为兼容以前逻辑，p-n仍是判断dex是否存在
-            return isDexExtracted();
-        } else if (isThisPendingUpdateInfo()) {
-            // 若PluginInfo是其它PluginInfo中的PendingUpdate，则返回那个PluginInfo的Used即可
-            return Plugin.isPluginUsed(getName());
-        } else {
-            // 若是纯APK，且不是PendingUpdate，则直接从Json中获取
-            return mJson.optBoolean("used");
-        }
+    public void setIsUsed(boolean used) {
+        JSONHelper.putNoThrows(mJson, "used", used);
     }
 
     /**
@@ -244,11 +307,6 @@ public class PluginInfo implements Parcelable, Cloneable {
      *
      * @return 是否被使用过
      */
-    public boolean isDexExtracted() {
-        File f = getDexFile();
-        // 文件存在，且大小不为 0 时，才返回 true。
-        return f.exists() && f.length() > 0;
-    }
 
     /**
      * 获取APK存放的文件信息 <p>
@@ -258,14 +316,8 @@ public class PluginInfo implements Parcelable, Cloneable {
      */
     public File getApkFile() {
         // 必须使用宿主的Context对象，防止出现“目录定位到插件内”的问题
-        Context context = RePluginEnv.getHostContext();
-        File dir;
-        if (isPnPlugin()) {
-            dir = context.getDir(LOCAL_PLUGIN_SUB_DIR, 0);
-        } else {
-            dir = context.getDir(LOCAL_PLUGIN_APK_SUB_DIR, 0);
-        }
-        return new File(dir, makeInstalledFileName() + ".jar");
+
+        return  null;
     }
 
     /**
@@ -277,12 +329,7 @@ public class PluginInfo implements Parcelable, Cloneable {
      */
     public File getDexParentDir() {
         // 必须使用宿主的Context对象，防止出现“目录定位到插件内”的问题
-        Context context = RePluginEnv.getHostContext();
-        if (isPnPlugin()) {
-            return context.getDir(LOCAL_PLUGIN_ODEX_SUB_DIR, 0);
-        } else {
-            return context.getDir(LOCAL_PLUGIN_APK_ODEX_SUB_DIR, 0);
-        }
+      return null;
     }
 
     /**
@@ -292,10 +339,7 @@ public class PluginInfo implements Parcelable, Cloneable {
      *
      * @return 优化后Dex所在文件的File对象
      */
-    public File getDexFile() {
-        File dir = getDexParentDir();
-        return new File(dir, makeInstalledFileName() + ".dex");
-    }
+
 
     /**
      * 根据类型来获取SO释放的路径 <p>
@@ -306,14 +350,7 @@ public class PluginInfo implements Parcelable, Cloneable {
      */
     public File getNativeLibsDir() {
         // 必须使用宿主的Context对象，防止出现“目录定位到插件内”的问题
-        Context context = RePluginEnv.getHostContext();
-        File dir;
-        if (isPnPlugin()) {
-            dir = context.getDir(LOCAL_PLUGIN_DATA_LIB_DIR, 0);
-        } else {
-            dir = context.getDir(LOCAL_PLUGIN_APK_LIB_DIR, 0);
-        }
-        return new File(dir, makeInstalledFileName());
+        return null;
     }
 
     /**
@@ -327,7 +364,7 @@ public class PluginInfo implements Parcelable, Cloneable {
      * 设置插件当前所处的类型。详细见TYPE_XXX常量 <p>
      * 注意：若为“纯APK”方案所用，则修改后需调用PluginInfoList.save来保存，否则会无效
      */
-    private void setType(int type) {
+    public void setType(int type) {
         JSONHelper.putNoThrows(mJson, "type", type);
     }
 
@@ -350,22 +387,53 @@ public class PluginInfo implements Parcelable, Cloneable {
     }
 
     /**
-     * 获取最小支持宿主API的版本
+     * 设置插件的更新信息。此信息有可能等到下次才能被使用 <p>
+     * 注意：若为“纯APK”方案所用，则修改后需调用PluginInfoList.save来保存，否则会无效
      *
-     * @deprecated 可能会废弃
+     * @param info 插件的更新信息
      */
-    public int getLowInterfaceApi() {
-        return mJson.optInt("low");
+    public void setPendingUpdate(PluginInfo info) {
+        mPendingUpdate = info;
+        if (info != null) {
+            JSONHelper.putNoThrows(mJson, "upinfo", info.getJSON());
+        } else {
+            mJson.remove("upinfo");
+        }
     }
 
     /**
-     * 获取最高支持宿主API的版本
+     * 是否需要删除插件？
      *
-     * @deprecated 可能会废弃
+     * @return 是否需要卸载插件
      */
-    public int getHighInterfaceApi() {
-        return mJson.optInt("high");
+    public boolean isNeedUninstall() {
+        return mPendingDelete != null;
     }
+
+    /**
+     * 获取将来要卸载的插件的信息，将会在下次启动时才能被使用
+     *
+     * @return 插件卸载信息
+     */
+    public PluginInfo getPendingDelete() {
+        return mPendingDelete;
+    }
+
+    /**
+     * 设置插件的卸载信息。此信息有可能等到下次才能被使用 <p>
+     * 注意：若为“纯APK”方案所用，则修改后需调用PluginInfoList.save来保存，否则会无效
+     *
+     * @param info 插件的卸载信息
+     */
+    public void setPendingDelete(PluginInfo info) {
+        mPendingDelete = info;
+        if (info != null) {
+            JSONHelper.putNoThrows(mJson, "delinfo", info.getJSON());
+        } else {
+            mJson.remove("delinfo");
+        }
+    }
+
 
     /**
      * 获取框架的版本号 <p>
@@ -383,8 +451,25 @@ public class PluginInfo implements Parcelable, Cloneable {
      *
      * @param version 框架版本号
      */
-    private void setFrameworkVersion(int version) {
+    public void setFrameworkVersion(int version) {
         JSONHelper.putNoThrows(mJson, "frm_ver", version);
+    }
+
+    /**
+     * 根据MetaData来设置框架版本号 <p>
+     * 注意：若为“纯APK”方案所用，则修改后需调用PluginInfoList.save来保存，否则会无效
+     *
+     * @param meta MetaData数据
+     */
+    public void setFrameworkVersionByMeta(Bundle meta) {
+
+    }
+
+    /**
+     * 获取JSON对象。仅内部使用
+     */
+    public JSONObject getJSON() {
+        return mJson;
     }
 
     /**
@@ -395,27 +480,18 @@ public class PluginInfo implements Parcelable, Cloneable {
      *
      * @return 文件名（不含扩展名）
      */
-    public String makeInstalledFileName() {
-        if (isPnPlugin() || getType() == TYPE_BUILTIN) {
-            return formatName();
-        } else {
-            // 混淆插件名字，做法：
-            // 1. 生成最初的名字：[插件包名（小写）][协议最低版本][协议最高版本][插件版本][ak]
-            //    必须用小写和数字、无特殊字符，否则hashCode后会有一定的重复率
-            // 2. 将其生成出hashCode
-            // 3. 将整体数字 - 88
-            String n = getPackageName().toLowerCase() + getLowInterfaceApi() + getHighInterfaceApi() + getVersion() + "ak";
-            int h = n.hashCode() - 88;
-            return Integer.toString(h);
-        }
-    }
 
-    private String formatName() {
-        return format(getName(), getLowInterfaceApi(), getHighInterfaceApi(), getVersion());
-    }
-
-    private String format(String name, int low, int high, int ver) {
-        return name + "-" + low + "-" + high + "-" + ver;
+    /**
+     * 更新插件信息。通常是在安装完新插件后调用此方法 <p>
+     * 只更新一些必要的方法，如插件版本、路径、时间等。插件名之类的不会被更新
+     *
+     * @param info 新版本插件信息
+     */
+    public void update(PluginInfo info) {
+        // TODO low high
+        setVersion(info.getVersion());
+        setPath(info.getPath());
+        setType(info.getType());
     }
 
     /**
@@ -424,30 +500,38 @@ public class PluginInfo implements Parcelable, Cloneable {
      *
      * @return 是否是PendingUpdate的PluginInfo
      */
-    private boolean isThisPendingUpdateInfo() {
+    public boolean isThisPendingUpdateInfo() {
         return mIsThisPendingUpdateInfo;
+    }
+
+    /**
+     * 此PluginInfo是否是一个位于其它PluginInfo中的PendingUpdate？ <p>
+     * 注意：仅框架内部使用
+     */
+    public void setIsThisPendingUpdateInfo(boolean updateInfo) {
+        mIsThisPendingUpdateInfo = updateInfo;
+    }
+
+    static PluginInfo createByJO(JSONObject jo) {
+        PluginInfo pi = new PluginInfo(jo);
+        // 必须有包名或别名
+        if (TextUtils.isEmpty(pi.getName())) {
+            return null;
+        }
+
+        return pi;
     }
 
     private void setVersion(int version) {
         JSONHelper.putNoThrows(mJson, "ver", version);
-        JSONHelper.putNoThrows(mJson, "verv", buildCompareValue());
-    }
 
-    private long buildCompareValue() {
-        long x;
-        x = getHighInterfaceApi() & 0x7fff;
-        long v1 = x << (32 + 16);
-        x = getLowInterfaceApi() & 0xffff;
-        long v2 = x << 32;
-        long v3 = getVersion();
-        return v1 | v2 | v3;
     }
 
     // -------------------------
     // Parcelable and Cloneable
     // -------------------------
 
-    public static final Parcelable.Creator<PluginInfo> CREATOR = new Parcelable.Creator<PluginInfo>() {
+    public static final Creator<PluginInfo> CREATOR = new Creator<PluginInfo>() {
 
         @Override
         public PluginInfo createFromParcel(Parcel source) {
@@ -461,16 +545,18 @@ public class PluginInfo implements Parcelable, Cloneable {
     };
 
     private PluginInfo(Parcel source) {
+        JSONObject jo = null;
         String txt = null;
         try {
             txt = source.readString();
-            mJson = new JSONObject(txt);
+            jo = new JSONObject(txt);
         } catch (JSONException e) {
             if (LogDebug.LOG) {
                 LogDebug.e(TAG, "PluginInfo: mJson error! s=" + txt, e);
             }
-            mJson = new JSONObject();
+            jo = new JSONObject();
         }
+        initPluginInfo(jo);
     }
 
     @Override
@@ -493,82 +579,10 @@ public class PluginInfo implements Parcelable, Cloneable {
         StringBuilder b = new StringBuilder();
 
         b.append("PInfo { ");
-        toContentString(b);
         b.append(" }");
 
         return b.toString();
     }
 
-    private void toContentString(StringBuilder b) {
-        // 插件名 + 版本 + 框架版本
-        {
-            b.append('<');
-            b.append(getName()).append(':').append(getVersion());
-            b.append('(').append(getFrameworkVersion()).append(')');
-            b.append("> ");
-        }
 
-        // 当前是否为PendingUpdate的信息
-        if (mIsThisPendingUpdateInfo) {
-            b.append("[isTPUI] ");
-        }
-
-        // 插件类型
-        {
-            if (getType() == TYPE_BUILTIN) {
-                b.append("[BUILTIN] ");
-            } else if (isPnPlugin()) {
-                b.append("[P-N] ");
-            } else {
-                b.append("[APK] ");
-            }
-        }
-
-        // 插件是否已释放
-        if (isDexExtracted()) {
-            b.append("[DEX_EXTRACTED] ");
-        }
-
-        // 插件是否“已被使用”
-        if (Plugin.isPluginUsed(getName())) {
-            b.append("[USED] ");
-        }
-
-        // 插件是否“正在使用”
-        if (Plugin.isPluginRunning(getName())) {
-            b.append("[USING] ");
-        }
-
-        // 插件基本信息
-        if (mJson != null) {
-            b.append("js=").append(mJson).append(' ');
-        }
-
-        // 和插件路径有关（除APK路径以外）
-        {
-            b.append("dex=").append(getDexFile()).append(' ');
-            b.append("nlib=").append(getNativeLibsDir());
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return mJson.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return mJson.equals(obj);
-    }
-
-    /**
-     * 判断是否为p-n类型的插件？
-     *
-     * @return 是否为p-n类型的插件
-     * @deprecated 只用于旧的P-n插件，可能会废弃
-     */
-    public boolean isPnPlugin() {
-        int type = getType();
-        return type == TYPE_PN_INSTALLED || type == TYPE_PN_JAR || type == TYPE_BUILTIN;
-    }
 }

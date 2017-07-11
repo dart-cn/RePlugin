@@ -18,7 +18,7 @@ package com.qihoo360.replugin.helper;
 
 import android.os.Build;
 
-import com.qihoo360.replugin.RePluginInternal;
+import com.qihoo360.replugin.BuildConfig;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +35,7 @@ import java.util.List;
 
 public class JSONHelper {
 
-    private static final boolean LOG = RePluginInternal.FOR_DEV;
+    private static final boolean LOG = BuildConfig.DEBUG;
 
     /**
      * 不抛出异常，直接Put

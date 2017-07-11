@@ -637,7 +637,7 @@ class Plugin {
             // 只有开启“详细日志”才会输出，防止“消耗性能”
             if (LOG && RePlugin.getConfig().isPrintDetailLog()) {
                 if (load == LOAD_DEX || load == LOAD_APP) {
-                    LogDebug.printPluginInfo(mInfo, load);
+//                    LogDebug.printPluginInfo(mInfo, load);
                     LogDebug.printMemoryStatus(LogDebug.TAG, "act=, loadLocked, flag=, End-1, pn=, " + mInfo.getName() + ", type=, " + load);
                 }
             }
@@ -690,7 +690,7 @@ class Plugin {
         // 只有开启“详细日志”才会输出，防止“消耗性能”
         if (LOG && RePlugin.getConfig().isPrintDetailLog()) {
             if (load == LOAD_DEX || load == LOAD_APP) {
-                LogDebug.printPluginInfo(mInfo, load);
+//                LogDebug.printPluginInfo(mInfo, load);
                 LogDebug.printMemoryStatus(LogDebug.TAG, "act=, loadLocked, flag=, End-2, pn=, " + mInfo.getName() + ", type=, " + load);
             }
         }

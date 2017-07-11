@@ -29,7 +29,7 @@ import com.qihoo360.i.Factory;
 import com.qihoo360.i.Factory2;
 import com.qihoo360.i.IPluginActivityManager;
 import com.qihoo360.i.IPluginManager;
-import com.qihoo360.loader.utils.ReflectUtils;
+import com.qihoo360.replugin.utils.ReflectUtils;
 import com.qihoo360.replugin.RePlugin;
 import com.qihoo360.replugin.base.IPC;
 import com.qihoo360.replugin.component.activity.ActivityInjector;

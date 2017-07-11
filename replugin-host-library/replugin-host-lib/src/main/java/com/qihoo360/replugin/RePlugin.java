@@ -61,8 +61,6 @@ import com.qihoo360.replugin.packages.RePluginInstaller;
 import java.io.File;
 import java.util.List;
 
-import static com.qihoo360.replugin.helper.LogDebug.LOG;
-
 /**
  * RePlugin的对外入口类 <p>
  * 宿主App可直接调用此类中的方法，来使用插件化的几乎全部的逻辑。
@@ -857,7 +855,7 @@ public class RePlugin {
 
             // 打印当前内存占用情况
             // 只有开启“详细日志”才会输出，防止“消耗性能”
-            if (LOG && RePlugin.getConfig().isPrintDetailLog()) {
+            if (LogDebug.LOG && RePlugin.getConfig().isPrintDetailLog()) {
                 LogDebug.printMemoryStatus(LogDebug.TAG, "act=, init, flag=, Start, pn=, framework, func=, attachBaseContext, lib=, RePlugin");
             }
 
@@ -900,7 +898,7 @@ public class RePlugin {
 
             // 打印当前内存占用情况
             // 只有开启“详细日志”才会输出，防止“消耗性能”
-            if (LOG && RePlugin.getConfig().isPrintDetailLog()) {
+            if (LogDebug.LOG && RePlugin.getConfig().isPrintDetailLog()) {
                 LogDebug.printMemoryStatus(LogDebug.TAG, "act=, init, flag=, End, pn=, framework, func=, onCreate, lib=, RePlugin");
             }
         }

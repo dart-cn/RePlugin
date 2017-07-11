@@ -20,9 +20,7 @@ import android.os.Build;
 import android.os.Debug;
 import android.util.Log;
 
-import com.qihoo360.replugin.RePluginInternal;
-import com.qihoo360.replugin.base.IPC;
-import com.qihoo360.replugin.model.PluginInfo;
+import com.qihoo360.replugin.BuildConfig;
 
 /**
  * 只在Debug环境下才输出的各种日志，只有当setDebug为true时才会出来
@@ -47,12 +45,13 @@ public class LogDebug {
      * }
      * </code>
      */
-    public static final boolean LOG = RePluginInternal.FOR_DEV;
+    public static final boolean FOR_DEV = BuildConfig.DEBUG;
+    public static final boolean LOG = BuildConfig.DEBUG;
 
     /**
      * 允许Dump出一些内容
      */
-    public static final boolean DUMP_ENABLED = LOG;
+    public static final boolean DUMP_ENABLED = FOR_DEV;
 
     /**
      * Send a verbose log message.
@@ -62,7 +61,7 @@ public class LogDebug {
      * @param msg The message you would like logged.
      */
     public static int v(String tag, String msg) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.v(TAG_PREFIX + tag, msg);
         }
         return -1;
@@ -77,7 +76,7 @@ public class LogDebug {
      * @param tr  An exception to log
      */
     public static int v(String tag, String msg, Throwable tr) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.v(TAG_PREFIX + tag, msg, tr);
         }
         return -1;
@@ -91,7 +90,7 @@ public class LogDebug {
      * @param msg The message you would like logged.
      */
     public static int d(String tag, String msg) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.d(TAG_PREFIX + tag, msg);
         }
         return -1;
@@ -106,7 +105,7 @@ public class LogDebug {
      * @param tr  An exception to log
      */
     public static int d(String tag, String msg, Throwable tr) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.d(TAG_PREFIX + tag, msg, tr);
         }
         return -1;
@@ -120,7 +119,7 @@ public class LogDebug {
      * @param msg The message you would like logged.
      */
     public static int i(String tag, String msg) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.i(TAG_PREFIX + tag, msg);
         }
         return -1;
@@ -135,7 +134,7 @@ public class LogDebug {
      * @param tr  An exception to log
      */
     public static int i(String tag, String msg, Throwable tr) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.i(TAG_PREFIX + tag, msg, tr);
         }
         return -1;
@@ -149,7 +148,7 @@ public class LogDebug {
      * @param msg The message you would like logged.
      */
     public static int w(String tag, String msg) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.w(TAG_PREFIX + tag, msg);
         }
         return -1;
@@ -164,7 +163,7 @@ public class LogDebug {
      * @param tr  An exception to log
      */
     public static int w(String tag, String msg, Throwable tr) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.w(TAG_PREFIX + tag, msg, tr);
         }
         return -1;
@@ -178,7 +177,7 @@ public class LogDebug {
      * @param tr  An exception to log
      */
     public static int w(String tag, Throwable tr) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.w(TAG_PREFIX + tag, tr);
         }
         return -1;
@@ -192,7 +191,7 @@ public class LogDebug {
      * @param msg The message you would like logged.
      */
     public static int e(String tag, String msg) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.e(TAG_PREFIX + tag, msg);
         }
         return -1;
@@ -207,7 +206,7 @@ public class LogDebug {
      * @param tr  An exception to log
      */
     public static int e(String tag, String msg, Throwable tr) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             return Log.e(TAG_PREFIX + tag, msg, tr);
         }
         return -1;
@@ -221,11 +220,11 @@ public class LogDebug {
      * @param msg The message you would like logged.
      */
     public static int printMemoryStatus(String tag, String msg) {
-        if (RePluginInternal.FOR_DEV) {
+        if (FOR_DEV) {
             Debug.MemoryInfo mi = new Debug.MemoryInfo();
             Debug.getMemoryInfo(mi);
 
-            String mit = "desc=, memory_v_0_0_1, process=, " + IPC.getCurrentProcessName() +
+            String mit = "desc=, memory_v_0_0_1, process=, " + // TODO IPC.getCurrentProcessName() +
                     ", totalPss=, " + mi.getTotalPss() +
                     ", dalvikPss=, " + mi.dalvikPss +
                     ", nativeSize=, " + mi.nativePss +
@@ -243,12 +242,12 @@ public class LogDebug {
      * @param load
      * @return
      */
-    public static int printPluginInfo(PluginInfo pi, int load) {
-        long apk = pi.getApkFile().length();
-        long dex = pi.getDexFile().length();
-        return printMemoryStatus(TAG, "act=, loadLocked, flag=, Start, pn=, " + pi.getName() + ", type=, " + load +
-                ", apk=, " + apk + ", odex=, " + dex + ", sys_api=, " + Build.VERSION.SDK_INT);
-    }
+//    public static int printPluginInfo(PluginInfo pi, int load) {
+//        long apk = pi.getApkFile().length();
+//        long dex = pi.getDexFile().length();
+//        return printMemoryStatus(TAG, "act=, loadLocked, flag=, Start, pn=, " + pi.getName() + ", type=, " + load +
+//                ", apk=, " + apk + ", odex=, " + dex + ", sys_api=, " + Build.VERSION.SDK_INT);
+//    }
 
     /**
      * @deprecated 为兼容卫士，以后干掉

@@ -25,6 +25,7 @@ import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.qihoo360.replugin.i.IPluginManager;
 import com.qihoo360.replugin.utils.ParcelUtils;
@@ -35,6 +36,8 @@ import com.qihoo360.replugin.packages.PluginRunningList;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.qihoo360.replugin.Plugin.ProxyRePluginVar.hostReRelugin;
+
 /**
  * RePlugin的对外入口类 <p>
  * 宿主App可直接调用此类中的方法，来使用插件化的几乎全部的逻辑。
@@ -42,7 +45,7 @@ import java.util.List;
  * @author RePlugin Team
  */
 
-public class RePlugin {
+public class Plugin {
 
     /**
      * 表示目标进程根据实际情况自动调配
@@ -74,20 +77,7 @@ public class RePlugin {
         if (!RePluginFramework.mHostInitialized) {
             return null;
         }
-
-        try {
-            Object obj = ProxyRePluginVar.install.call(null, path);
-            if (obj != null) {
-                // 跨ClassLoader进行parcel对象的构造
-                Parcel p = ParcelUtils.createFromParcelable((Parcelable) obj);
-                return PluginInfo.CREATOR.createFromParcel(p);
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-        return null;
+        return hostReRelugin.install(path);
     }
 
     /**
@@ -104,18 +94,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.preload.call(null, pluginName);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.preload(pluginName);
     }
 
     /**
@@ -137,21 +116,8 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            // 跨classloader创建PluginInfo对象
-            // TODO 如果有更优雅的方式，可优化
-            Object p = ParcelUtils.createFromParcelable(pi, RePluginEnv.getHostCLassLoader(), "com.qihoo360.replugin.model.PluginInfo");
-            Object obj = ProxyRePluginVar.preload2.call(null, p);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
+        return hostReRelugin.preload(pi);
 
-        return false;
     }
 
     /**
@@ -170,18 +136,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.startActivity.call(null, context, intent);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.startActivity(context, intent);
     }
 
     /**
@@ -194,23 +149,14 @@ public class RePlugin {
      * @see #startActivity(Context, Intent)
      * @since 1.0.0
      */
+    private static final String TAG = "Plugin";
     public static boolean startActivity(Context context, Intent intent, String pluginName, String activity) {
+        Log.e(TAG, "startActivity() called with: context = [" + context + "], intent = [" + intent + "], pluginName = [" + pluginName + "], activity = [" + activity + "]");
         if (!RePluginFramework.mHostInitialized) {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.startActivity2.call(null, context, intent, pluginName, activity);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.startActivity(context, intent, pluginName, activity);
     }
 
     /**
@@ -236,15 +182,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (Intent) ProxyRePluginVar.createIntent.call(null, pluginName, cls);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.createIntent(pluginName, cls);
     }
 
     /**
@@ -260,15 +198,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (ComponentName) ProxyRePluginVar.createComponentName.call(null, pluginName, cls);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.createComponentName(pluginName, cls);
     }
 
     /**
@@ -285,18 +215,8 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isForDev.call(null);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
+        return hostReRelugin.isForDev();
 
-        return false;
     }
 
     /**
@@ -310,15 +230,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (String) ProxyRePluginVar.getSDKVersion.call(null);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.getSDKVersion();
     }
 
     /**
@@ -336,15 +248,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (PackageInfo) ProxyRePluginVar.fetchPackageInfo.call(null, pluginName);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.fetchPackageInfo(pluginName);
     }
 
     /**
@@ -362,15 +266,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (Resources) ProxyRePluginVar.fetchResources.call(null, pluginName);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.fetchResources(pluginName);
     }
 
     /**
@@ -387,15 +283,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (ClassLoader) ProxyRePluginVar.fetchClassLoader.call(null, pluginName);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.fetchClassLoader(pluginName);
     }
 
     /**
@@ -412,15 +300,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (Context) ProxyRePluginVar.fetchContext.call(null, pluginName);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.fetchContext(pluginName);
     }
 
 
@@ -445,15 +325,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (IBinder) ProxyRePluginVar.fetchBinder2.call(null, pluginName, module, process);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.fetchBinder(pluginName, module, process);
     }
 
     /**
@@ -476,15 +348,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (IBinder) ProxyRePluginVar.fetchBinder.call(null, pluginName, module);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.fetchBinder(pluginName, module);
     }
 
     /**
@@ -500,16 +364,7 @@ public class RePlugin {
         if (!RePluginFramework.mHostInitialized) {
             return null;
         }
-
-        try {
-            return (String) ProxyRePluginVar.fetchPluginNameByClassLoader.call(null, cl);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.fetchPluginNameByClassLoader(cl);
     }
 
     /**
@@ -523,26 +378,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            List list = (List) ProxyRePluginVar.getPluginInfoList.call(null);
-            if (list != null && list.size() > 0) {
-                List<PluginInfo> ret = new ArrayList<>();
-                for (Object o : list) {
-                    // 跨ClassLoader进行parcel对象的构造
-                    Parcel p = ParcelUtils.createFromParcelable((Parcelable) o);
-                    PluginInfo nPi = PluginInfo.CREATOR.createFromParcel(p);
-                    ret.add(nPi);
-                }
-
-                return ret;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.getPluginInfoList();
     }
 
     /**
@@ -557,20 +393,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.getPluginInfo.call(null, name);
-            if (obj != null) {
-                // 跨ClassLoader进行parcel对象的构造
-                Parcel p = ParcelUtils.createFromParcelable((Parcelable) obj);
-                return PluginInfo.CREATOR.createFromParcel(p);
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.getPluginInfo(name);
     }
 
     /**
@@ -585,18 +408,7 @@ public class RePlugin {
             return -1;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.getPluginVersion.call(null, name);
-            if (obj != null) {
-                return (Integer) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return -1;
+        return hostReRelugin.getPluginVersion(name);
     }
 
     /**
@@ -612,18 +424,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isPluginInstalled.call(null, pluginName);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.isPluginInstalled(pluginName);
     }
 
     /**
@@ -639,18 +440,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isPluginUsed.call(null, pluginName);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.isPluginUsed(pluginName);
     }
 
     /**
@@ -665,18 +455,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isPluginDexExtracted.call(null, pluginName);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.isPluginDexExtracted(pluginName);
     }
 
     /**
@@ -691,18 +470,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isPluginRunning.call(null, pluginName);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.isPluginRunning(pluginName);
     }
 
     /**
@@ -718,18 +486,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isPluginRunningInProcess.call(null, pluginName, process);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.isPluginRunningInProcess(pluginName, process);
     }
 
     /**
@@ -744,20 +501,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.getRunningPlugins.call(null);
-            if (obj != null) {
-                // 跨ClassLoader创建parcelable对象
-                Parcel p = ParcelUtils.createFromParcelable((Parcelable) obj);
-                PluginRunningList.CREATOR.createFromParcel(p);
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-        // FIXME
-        return null;
+        return hostReRelugin.getRunningPlugins();
     }
 
     /**
@@ -773,15 +517,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (String[]) ProxyRePluginVar.getRunningProcessesByPlugin.call(null, pluginName);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.getRunningProcessesByPlugin(pluginName);
     }
 
     /**
@@ -795,18 +531,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isCurrentPersistentProcess.call(null);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.isCurrentPersistentProcess();
     }
 
     /**
@@ -826,7 +551,7 @@ public class RePlugin {
             return;
         }
 
-        ProxyRePluginVar.registerInstalledReceiver.call(null, context, r);
+        hostReRelugin.registerInstalledReceiver(context, r);
     }
 
     /**
@@ -847,13 +572,7 @@ public class RePlugin {
             return false;
         }
 
-        Object obj = ProxyRePluginVar.registerGlobalBinder.call(null, name, binder);
-
-        if (obj != null) {
-            return (Boolean) obj;
-        }
-
-        return false;
+        return hostReRelugin.registerGlobalBinder(name, binder);
     }
 
     /**
@@ -876,16 +595,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.registerGlobalBinderDelayed.call(null, name, getter);
-
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.registerGlobalBinderDelayed(name, getter);
     }
 
     /**
@@ -902,18 +612,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.unregisterGlobalBinder.call(null, name);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.unregisterGlobalBinder(name);
     }
 
     public static IBinder getGlobalBinder(String name) {
@@ -921,15 +620,7 @@ public class RePlugin {
             return null;
         }
 
-        try {
-            return (IBinder) ProxyRePluginVar.getGlobalBinder.call(null, name);
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
+        return hostReRelugin.getGlobalBinder(name);
     }
 
     /**
@@ -968,7 +659,7 @@ public class RePlugin {
             return;
         }
 
-        ProxyRePluginVar.registerHookingClass.call(null, source, target, defClass);
+        hostReRelugin.registerHookingClass(source, target, defClass);
     }
 
     /**
@@ -982,18 +673,7 @@ public class RePlugin {
             return false;
         }
 
-        try {
-            Object obj = ProxyRePluginVar.isHookingClass.call(null, component);
-            if (obj != null) {
-                return (Boolean) obj;
-            }
-        } catch (Exception e) {
-            if (LogDebug.LOG) {
-                e.printStackTrace();
-            }
-        }
-
-        return false;
+        return hostReRelugin.isHookingClass(component);
     }
 
     /**
@@ -1039,130 +719,16 @@ public class RePlugin {
     }
 
     static class ProxyRePluginVar {
-
-        private static MethodInvoker install;
-
-        private static MethodInvoker preload;
-
-        private static MethodInvoker preload2;
-
-        private static MethodInvoker startActivity;
-
-        private static MethodInvoker startActivity2;
-
-        private static MethodInvoker createIntent;
-
-        private static MethodInvoker createComponentName;
-
-        private static MethodInvoker isForDev;
-
-        private static MethodInvoker getSDKVersion;
-
-        private static MethodInvoker fetchPackageInfo;
-
-        private static MethodInvoker fetchResources;
-
-        private static MethodInvoker fetchClassLoader;
-
-        private static MethodInvoker fetchContext;
-
-        private static MethodInvoker fetchBinder;
-
-        private static MethodInvoker fetchBinder2;
-
-        private static MethodInvoker fetchPluginNameByClassLoader;
-
-        private static MethodInvoker getPluginInfoList;
-
-        private static MethodInvoker getPluginInfo;
-
-        private static MethodInvoker getPluginVersion;
-
-        private static MethodInvoker isPluginInstalled;
-
-        private static MethodInvoker isPluginUsed;
-
-        private static MethodInvoker isPluginDexExtracted;
-
-        private static MethodInvoker isPluginRunning;
-
-        private static MethodInvoker isPluginRunningInProcess;
-
-        private static MethodInvoker getRunningPlugins;
-
-        private static MethodInvoker getRunningProcessesByPlugin;
-
-        private static MethodInvoker isCurrentPersistentProcess;
-
-        private static MethodInvoker registerInstalledReceiver;
-
-        private static MethodInvoker registerGlobalBinder;
-
-        private static MethodInvoker registerGlobalBinderDelayed;
-
-        private static MethodInvoker unregisterGlobalBinder;
-
-        private static MethodInvoker getGlobalBinder;
-
-        private static MethodInvoker registerHookingClass;
-
-        private static MethodInvoker isHookingClass;
-
+        static RePlugin hostReRelugin;
         static void initLocked(final ClassLoader classLoader) {
-
             // 初始化Replugin的相关方法
             final String rePlugin = "com.qihoo360.replugin.RePlugin";
-            install = new MethodInvoker(classLoader, rePlugin, "install", new Class<?>[]{String.class});
-            preload = new MethodInvoker(classLoader, rePlugin, "preload", new Class<?>[]{String.class});
-
-            // 这里的参数类型PluginInfo是主程序ClassLoader中的PluginInfo
             try {
-                Class hostPluginInfo = classLoader.loadClass("com.qihoo360.replugin.model.PluginInfo");
-                preload2 = new MethodInvoker(classLoader, rePlugin, "preload", new Class<?>[]{PluginInfo.class});
-            } catch (ClassNotFoundException e) {
-                //
-            }
-
-
-            startActivity = new MethodInvoker(classLoader, rePlugin, "startActivity", new Class<?>[]{Context.class, Intent.class});
-            startActivity2 = new MethodInvoker(classLoader, rePlugin, "startActivity", new Class<?>[]{Context.class, Intent.class, String.class, String.class});
-            createIntent = new MethodInvoker(classLoader, rePlugin, "createIntent", new Class<?>[]{String.class, String.class});
-            createComponentName = new MethodInvoker(classLoader, rePlugin, "createComponentName", new Class<?>[]{String.class, String.class});
-            isForDev = new MethodInvoker(classLoader, rePlugin, "isForDev", new Class<?>[]{});
-            getSDKVersion = new MethodInvoker(classLoader, rePlugin, "getSDKVersion", new Class<?>[]{});
-            fetchPackageInfo = new MethodInvoker(classLoader, rePlugin, "fetchPackageInfo", new Class<?>[]{String.class});
-            fetchResources = new MethodInvoker(classLoader, rePlugin, "fetchResources", new Class<?>[]{String.class});
-            fetchClassLoader = new MethodInvoker(classLoader, rePlugin, "fetchClassLoader", new Class<?>[]{String.class});
-            fetchContext = new MethodInvoker(classLoader, rePlugin, "fetchContext", new Class<?>[]{String.class});
-            fetchBinder = new MethodInvoker(classLoader, rePlugin, "fetchBinder", new Class<?>[]{String.class, String.class});
-            fetchBinder2 = new MethodInvoker(classLoader, rePlugin, "fetchBinder", new Class<?>[]{String.class, String.class, String.class});
-            fetchPluginNameByClassLoader = new MethodInvoker(classLoader, rePlugin, "fetchPluginNameByClassLoader", new Class<?>[]{ClassLoader.class});
-            getPluginInfoList = new MethodInvoker(classLoader, rePlugin, "getPluginInfoList", new Class<?>[]{});
-            getPluginInfo = new MethodInvoker(classLoader, rePlugin, "getPluginInfo", new Class<?>[]{String.class});
-            getPluginVersion = new MethodInvoker(classLoader, rePlugin, "getPluginVersion", new Class<?>[]{String.class});
-            isPluginInstalled = new MethodInvoker(classLoader, rePlugin, "isPluginInstalled", new Class<?>[]{String.class});
-            isPluginUsed = new MethodInvoker(classLoader, rePlugin, "isPluginUsed", new Class<?>[]{String.class});
-            isPluginDexExtracted = new MethodInvoker(classLoader, rePlugin, "isPluginDexExtracted", new Class<?>[]{String.class});
-            isPluginRunning = new MethodInvoker(classLoader, rePlugin, "isPluginRunning", new Class<?>[]{String.class});
-            isPluginRunningInProcess = new MethodInvoker(classLoader, rePlugin, "isPluginRunningInProcess", new Class<?>[]{String.class, String.class});
-            getRunningPlugins = new MethodInvoker(classLoader, rePlugin, "getRunningPlugins", new Class<?>[]{});
-            getRunningProcessesByPlugin = new MethodInvoker(classLoader, rePlugin, "getRunningProcessesByPlugin", new Class<?>[]{String.class});
-            isCurrentPersistentProcess = new MethodInvoker(classLoader, rePlugin, "isCurrentPersistentProcess", new Class<?>[]{});
-            registerInstalledReceiver = new MethodInvoker(classLoader, rePlugin, "registerInstalledReceiver", new Class<?>[]{Context.class, BroadcastReceiver.class});
-            registerGlobalBinder = new MethodInvoker(classLoader, rePlugin, "registerGlobalBinder", new Class<?>[]{String.class, IBinder.class});
-
-            Class cGetter = null;
-            try {
-                cGetter = classLoader.loadClass("com.qihoo360.replugin.IBinderGetter");
+                Class clz = (Class) Class.forName(rePlugin, false, classLoader);
+                hostReRelugin = (RePlugin) clz.newInstance();
             } catch (Exception e) {
-                // ignore
+                e.printStackTrace();
             }
-            registerGlobalBinderDelayed = new MethodInvoker(classLoader, rePlugin, "registerGlobalBinderDelayed", new Class<?>[]{String.class, cGetter});
-
-            unregisterGlobalBinder = new MethodInvoker(classLoader, rePlugin, "unregisterGlobalBinder", new Class<?>[]{String.class});
-            getGlobalBinder = new MethodInvoker(classLoader, rePlugin, "getGlobalBinder", new Class<?>[]{String.class});
-            registerHookingClass = new MethodInvoker(classLoader, rePlugin, "registerHookingClass", new Class<?>[]{String.class, ComponentName.class, Class.class});
-            isHookingClass = new MethodInvoker(classLoader, rePlugin, "isHookingClass", new Class<?>[]{ComponentName.class});
         }
     }
 }

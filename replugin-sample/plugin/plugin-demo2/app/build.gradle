@@ -59,5 +59,6 @@ apply plugin: 'replugin-plugin-gradle'
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile "com.qihoo360.replugin:replugin-plugin-lib:${rootProject.ext.repluginLibVersion}"
+    compile project(':PluginLib')
+//    compile "com.qihoo360.replugin:replugin-plugin-lib:${rootProject.ext.repluginLibVersion}"
 }
