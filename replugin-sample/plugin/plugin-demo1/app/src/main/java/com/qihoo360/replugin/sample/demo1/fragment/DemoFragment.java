@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.qihoo360.replugin.Plugin;
+import com.qihoo360.replugin.RePluginEnv;
 import com.qihoo360.replugin.sample.demo1.R;
 
 /**
@@ -30,6 +30,6 @@ public class DemoFragment extends Fragment {
         /**
          * 需要注意不能使用inflater及container因为他们的Context是宿主的
          */
-        return LayoutInflater.from(Plugin.getPluginContext()).inflate(R.layout.main_fragment, container, false);
+        return LayoutInflater.from(RePluginEnv.getPluginContext()).inflate(R.layout.main_fragment, container, false);
     }
 }

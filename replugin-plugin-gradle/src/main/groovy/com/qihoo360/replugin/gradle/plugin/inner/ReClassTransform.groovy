@@ -164,7 +164,7 @@ public class ReClassTransform extends Transform {
             File jar = new File(it)
             String dir = jar.getParent() + '/' + jar.getName().replace('.jar', '')
 
-            // println ">>> 压缩目录 $dir"
+             println ">>> 压缩目录 $dir --- ${jar.absolutePath}"
             Util.zipDir(dir, jar.absolutePath)
 
             // println ">>> 删除目录 $dir"

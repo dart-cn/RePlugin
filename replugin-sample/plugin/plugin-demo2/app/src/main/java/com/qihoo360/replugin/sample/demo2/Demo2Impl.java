@@ -18,7 +18,8 @@ package com.qihoo360.replugin.sample.demo2;
 import android.os.RemoteException;
 import android.widget.Toast;
 
-import com.qihoo360.replugin.Plugin;
+import com.qihoo360.replugin.RePluginEnv;
+
 
 /**
  * @author RePlugin Team
@@ -26,6 +27,6 @@ import com.qihoo360.replugin.Plugin;
 public class Demo2Impl extends IDemo2.Stub {
     @Override
     public void hello(String str) throws RemoteException {
-        Toast.makeText(Plugin.getPluginContext(), str, Toast.LENGTH_SHORT).show();
+        Toast.makeText(RePluginEnv.getPluginContext(), str, Toast.LENGTH_SHORT).show();
     }
 }

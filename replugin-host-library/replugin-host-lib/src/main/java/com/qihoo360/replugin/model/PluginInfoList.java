@@ -19,7 +19,7 @@ package com.qihoo360.replugin.model;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.qihoo360.loader2.Constant;
+import com.qihoo360.replugin.utils.Constant;
 import com.qihoo360.replugin.helper.JSONHelper;
 import com.qihoo360.replugin.helper.LogDebug;
 

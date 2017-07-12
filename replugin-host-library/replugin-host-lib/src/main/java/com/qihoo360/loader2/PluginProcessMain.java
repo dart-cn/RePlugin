@@ -34,6 +34,7 @@ import com.qihoo360.replugin.helper.LogRelease;
 import com.qihoo360.replugin.model.PluginInfo;
 import com.qihoo360.replugin.packages.PluginManagerProxy;
 import com.qihoo360.replugin.packages.PluginManagerServer;
+import com.qihoo360.replugin.utils.Constant;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;

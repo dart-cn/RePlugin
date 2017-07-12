@@ -31,6 +31,7 @@ import com.qihoo360.replugin.model.PluginInfo;
 
 import com.qihoo360.replugin.ext.io.FileUtils;
 import com.qihoo360.replugin.ext.io.IOUtils;
+import com.qihoo360.replugin.utils.Constant;
 
 import java.io.DataInputStream;
 import java.io.File;

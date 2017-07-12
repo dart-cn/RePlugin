@@ -23,7 +23,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
-import com.qihoo360.replugin.RePluginInternal;
+import com.qihoo360.i.Factory2;
 import com.qihoo360.replugin.helper.LogRelease;
 
 import java.lang.reflect.Field;
@@ -35,7 +35,7 @@ public abstract class PluginAppCompatActivity extends AppCompatActivity {
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        newBase = RePluginInternal.createActivityContext(this, newBase);
+        newBase = Factory2.createActivityContext(this, newBase);
         super.attachBaseContext(newBase);
     }
 
@@ -48,18 +48,18 @@ public abstract class PluginAppCompatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //
-        RePluginInternal.handleActivityCreateBefore(this, savedInstanceState);
+        Factory2.handleActivityCreateBefore(this, savedInstanceState);
 
         super.onCreate(savedInstanceState);
 
         //
-        RePluginInternal.handleActivityCreate(this, savedInstanceState);
+        Factory2.handleActivityCreate(this, savedInstanceState);
     }
 
     @Override
     protected void onDestroy() {
         //
-        RePluginInternal.handleActivityDestroy(this);
+        Factory2.handleActivityDestroy(this);
 
         super.onDestroy();
     }
@@ -67,7 +67,7 @@ public abstract class PluginAppCompatActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         //
-        RePluginInternal.handleRestoreInstanceState(this, savedInstanceState);
+        Factory2.handleRestoreInstanceState(this, savedInstanceState);
 
         try {
             super.onRestoreInstanceState(savedInstanceState);
@@ -91,8 +91,8 @@ public abstract class PluginAppCompatActivity extends AppCompatActivity {
     @Override
     public void startActivity(Intent intent) {
         //
-        if (RePluginInternal.startActivity(this, intent)) {
-            // 这个地方不需要回调startActivityAfter，因为RePluginInternal最终还是会回调回来，最终还是要走super.startActivity()
+        if (Factory2.startActivity(this, intent)) {
+            // 这个地方不需要回调startActivityAfter，因为Factory2最终还是会回调回来，最终还是要走super.startActivity()
             return;
         }
 
@@ -107,7 +107,7 @@ public abstract class PluginAppCompatActivity extends AppCompatActivity {
     @Override
     public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
         //
-        if (RePluginInternal.startActivityForResult(this, intent, requestCode, options)) {
+        if (Factory2.startActivityForResult(this, intent, requestCode, options)) {
             return;
         }
 

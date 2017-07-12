@@ -19,7 +19,7 @@
  */
 apply plugin: 'com.android.library'
 
-version = "2.1.4"
+version = "2.1.6"
 group = 'com.qihoo360.replugin'  // 组名
 
 android {
@@ -52,6 +52,18 @@ dependencies {
     // 以“占位符”（Provided）的方式来引用support-v4，不会编入AAR
     // 但宿主需要支持Support-v4（至少应支持LocalBroadcastManager）
     provided "com.android.support:support-v4:$rootProject.supportLibraryVersion"
+}
+
+android.libraryVariants.all { variant ->
+    def name = variant.buildType.name
+    if (name.equals(com.android.builder.core.BuilderConstants.DEBUG)) {
+        return; // Skip debug builds.
+    }
+
+    def task = project.tasks.create "jar${name.capitalize()}", Jar
+    task.dependsOn variant.javaCompile
+    task.from variant.javaCompile.destinationDir
+    artifacts.add('archives', task);
 }
 
 apply from: 'bintray.gradle'

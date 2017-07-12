@@ -18,6 +18,7 @@ package com.qihoo360.replugin.helper;
 
 import com.qihoo360.replugin.ext.lang3.ClassUtils;
 import com.qihoo360.replugin.ext.lang3.reflect.FieldUtils;
+import com.qihoo360.replugin.utils.Constant;
 
 /**
  * 从宿主的 RePluginHostConfig 中获取一些字段值，
@@ -61,10 +62,10 @@ public class HostConfigHelper {
     //------------------------------------------------------------
 
     // HOST 向下兼容的插件版本
-    public static int ADAPTER_COMPATIBLE_VERSION = 10;
+    public static int ADAPTER_COMPATIBLE_VERSION = Constant.ADAPTER_COMPATIBLE_VERSION;
 
     // HOST 插件版本
-    public static int ADAPTER_CURRENT_VERSION = 12;
+    public static int ADAPTER_CURRENT_VERSION = Constant.ADAPTER_CURRENT_VERSION;
 
     static {
 

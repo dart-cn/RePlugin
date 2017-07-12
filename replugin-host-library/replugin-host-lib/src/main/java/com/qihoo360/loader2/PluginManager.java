@@ -23,6 +23,7 @@ import com.qihoo360.i.IPluginManager;
 import com.qihoo360.replugin.base.IPC;
 import com.qihoo360.replugin.component.process.PluginProcessHost;
 import com.qihoo360.replugin.helper.LogDebug;
+import com.qihoo360.replugin.utils.Constant;
 
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;

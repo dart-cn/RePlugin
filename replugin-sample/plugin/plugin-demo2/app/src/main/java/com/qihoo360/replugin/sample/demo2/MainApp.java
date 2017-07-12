@@ -20,7 +20,7 @@ import android.app.Application;
 import android.content.Context;
 import android.widget.Toast;
 
-import com.qihoo360.replugin.Plugin;
+import com.qihoo360.replugin.RePluginServiceManager;
 
 /**
  * @author RePlugin Team
@@ -30,8 +30,7 @@ public class MainApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        Plugin.registerPluginBinder("demo2test", new Demo2Impl());
+        RePluginServiceManager.getInstance().addService("demo2test", new Demo2Impl());
     }
 
     public static void helloFromDemo1(Context c, String text) {

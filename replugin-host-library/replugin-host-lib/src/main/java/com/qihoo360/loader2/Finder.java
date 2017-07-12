@@ -21,6 +21,7 @@ import android.content.Context;
 import com.qihoo360.loader2.Builder.PxAll;
 import com.qihoo360.replugin.helper.LogDebug;
 import com.qihoo360.replugin.model.PluginInfo;
+import com.qihoo360.replugin.utils.Constant;
 
 import java.io.File;
 import java.util.HashSet;

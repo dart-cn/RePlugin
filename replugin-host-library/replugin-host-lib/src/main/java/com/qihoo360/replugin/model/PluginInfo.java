@@ -27,7 +27,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
-import com.qihoo360.loader2.Constant;
 import com.qihoo360.loader2.PluginNativeLibsHelper;
 import com.qihoo360.loader2.V5FileInfo;
 import com.qihoo360.replugin.RePlugin;
@@ -36,6 +35,8 @@ import com.qihoo360.replugin.helper.JSONHelper;
 import com.qihoo360.replugin.helper.LogDebug;
 
 import com.qihoo360.replugin.ext.io.FileUtils;
+import com.qihoo360.replugin.utils.Constant;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

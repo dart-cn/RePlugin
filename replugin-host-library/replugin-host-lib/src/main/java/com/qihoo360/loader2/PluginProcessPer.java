@@ -37,6 +37,7 @@ import com.qihoo360.replugin.component.service.server.IPluginServiceServer;
 import com.qihoo360.replugin.component.service.server.PluginServiceServer;
 import com.qihoo360.replugin.helper.LogDebug;
 import com.qihoo360.replugin.helper.LogRelease;
+import com.qihoo360.replugin.utils.Constant;
 
 import java.util.HashMap;
 import java.util.HashSet;

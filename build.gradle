@@ -31,12 +31,13 @@ buildscript {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
         classpath "com.qihoo360.replugin:replugin-host-gradle:$repluginGradleVersion"
-        classpath "com.qihoo360.replugin:replugin-plugin-gradle:$repluginGradleVersion"
+        classpath "com.qihoo360.replugin:replugin-plugin-gradle:2.1.6"
     }
 }
 
 allprojects {
     repositories {
+        mavenLocal()
         jcenter()
         mavenCentral()
         maven {

@@ -26,3 +26,4 @@
 -keepattributes SourceFile,LineNumberTable
 
 # ---------------------------------------------
+-dontwarn com.qihoo360.replugin.**

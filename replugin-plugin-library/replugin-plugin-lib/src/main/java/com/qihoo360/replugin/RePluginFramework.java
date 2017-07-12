@@ -68,12 +68,12 @@ public class RePluginFramework {
 
         try {
             //
-            RePluginInternal.ProxyRePluginInternalVar.initLocked(cl);
-            Plugin.ProxyRePluginVar.initLocked(cl);
+//            RePluginInternal.ProxyRePluginInternalVar.initLocked(cl);
+//            Plugin.ProxyRePluginVar.initLocked(cl);
             PluginLocalBroadcastManager.ProxyLocalBroadcastManagerVar.initLocked(cl);
             PluginProviderClient.ProxyRePluginProviderClientVar.initLocked(cl);
             PluginServiceClient.ProxyRePluginServiceClientVar.initLocked(cl);
-            IPC.ProxyIPCVar.initLocked(cl);
+//            IPC.ProxyIPCVar.initLocked(cl);
 
             mHostInitialized = true;
 

@@ -43,6 +43,7 @@ import com.qihoo360.replugin.helper.LogRelease;
 import com.qihoo360.replugin.model.PluginInfo;
 import com.qihoo360.replugin.packages.IPluginManagerServer;
 import com.qihoo360.replugin.packages.PluginManagerServer;
+import com.qihoo360.replugin.utils.Constant;
 
 import java.io.File;
 import java.util.ArrayList;

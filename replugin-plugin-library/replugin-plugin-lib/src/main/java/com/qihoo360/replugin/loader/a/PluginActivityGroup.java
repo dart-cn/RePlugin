@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.qihoo360.i.Factory2;
 import com.qihoo360.replugin.RePluginInternal;
 import com.qihoo360.replugin.helper.LogRelease;
 
@@ -31,25 +32,25 @@ public abstract class PluginActivityGroup extends ActivityGroup {
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        newBase = RePluginInternal.createActivityContext(this, newBase);
+        newBase = Factory2.createActivityContext(this, newBase);
         super.attachBaseContext(newBase);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //
-        RePluginInternal.handleActivityCreateBefore(this, savedInstanceState);
+        Factory2.handleActivityCreateBefore(this, savedInstanceState);
 
         super.onCreate(savedInstanceState);
 
         //
-        RePluginInternal.handleActivityCreate(this, savedInstanceState);
+        Factory2.handleActivityCreate(this, savedInstanceState);
     }
 
     @Override
     protected void onDestroy() {
         //
-        RePluginInternal.handleActivityDestroy(this);
+        Factory2.handleActivityDestroy(this);
 
         super.onDestroy();
     }
@@ -57,7 +58,7 @@ public abstract class PluginActivityGroup extends ActivityGroup {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         //
-        RePluginInternal.handleRestoreInstanceState(this, savedInstanceState);
+        Factory2.handleRestoreInstanceState(this, savedInstanceState);
 
         try {
             super.onRestoreInstanceState(savedInstanceState);
@@ -81,7 +82,7 @@ public abstract class PluginActivityGroup extends ActivityGroup {
     @Override
     public void startActivity(Intent intent) {
         //
-        if (RePluginInternal.startActivity(this, intent)) {
+        if (Factory2.startActivity(this, intent)) {
             return;
         }
 
@@ -91,7 +92,7 @@ public abstract class PluginActivityGroup extends ActivityGroup {
     @Override
     public void startActivityForResult(Intent intent, int requestCode) {
         //
-        if (RePluginInternal.startActivityForResult(this, intent, requestCode)) {
+        if (Factory2.startActivityForResult(this, intent, requestCode, null)) {
             return;
         }
 

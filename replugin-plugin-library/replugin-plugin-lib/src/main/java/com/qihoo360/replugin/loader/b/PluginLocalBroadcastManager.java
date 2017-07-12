@@ -84,7 +84,7 @@ public class PluginLocalBroadcastManager {
         }
     }
 
-    private static final String TAG = "PluginLocalBroadcastManager";
+    private static final String TAG = "PluginLocalBM";
     private static final boolean DEBUG = false;
 
     private final Context mAppContext;

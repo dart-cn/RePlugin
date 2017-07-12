@@ -43,7 +43,7 @@ buildscript {
 configurations.compile.exclude group: 'com.qihoo360.replugin'
 
 group = 'com.qihoo360.replugin'  // 组名
-version = '2.1.4' // 版本
+version = '2.1.6' // 版本
 
 dependencies {
     compile 'com.android.tools.build:gradle:2.1.3'

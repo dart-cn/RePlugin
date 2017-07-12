@@ -14,9 +14,8 @@
  * the License.
  */
 
-package com.qihoo360.loader2;
+package com.qihoo360.replugin.utils;
 
-import com.qihoo360.replugin.helper.HostConfigHelper;
 
 /**
  * @author RePlugin Team
@@ -26,12 +25,12 @@ public class Constant {
     /**
      * HOST向下兼容版本
      */
-    public static final int ADAPTER_COMPATIBLE_VERSION = HostConfigHelper.ADAPTER_COMPATIBLE_VERSION;
+    public static final int ADAPTER_COMPATIBLE_VERSION = 10;
 
     /**
      * HOST版本
      */
-    public static final int ADAPTER_CURRENT_VERSION = HostConfigHelper.ADAPTER_CURRENT_VERSION;
+    public static final int ADAPTER_CURRENT_VERSION = 12;
 
     /**
      * 插件存放目录
